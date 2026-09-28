@@ -11,7 +11,7 @@ Jika menggunakan XAMPP:
 1. Copy folder `hotel_reservation_php` ke `htdocs`.
 2. jalankan 
 ```bash
-cmd composer require vlucas/phpdotenv
+composer require vlucas/phpdotenv
 ``` 
 pada `terminal` 
 2. Jalankan Apache dari XAMPP.
