@@ -10,7 +10,9 @@ Struktur:
 Jika menggunakan XAMPP:
 1. Copy folder `hotel_reservation_php` ke `htdocs`.
 2. jalankan 
-`composer require vlucas/phpdotenv` 
+```bash
+cmd composer require vlucas/phpdotenv
+``` 
 pada `terminal` 
 2. Jalankan Apache dari XAMPP.
 3. Buka:
