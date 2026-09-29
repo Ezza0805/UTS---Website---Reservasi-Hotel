@@ -17,19 +17,29 @@ $sort = $_GET['sort'] ?? 'recommended';
 
 // =========================================
 // QUERY HOTEL
+// Rating dihitung dari hotel_reviews
 // =========================================
 
 $sql = "
     SELECT
-        id,
-        name,
-        location,
-        description,
-        address,
-        phone,
-        rating,
-        image
-    FROM hotels
+        h.id,
+        h.name,
+        h.location,
+        h.description,
+        h.address,
+        h.phone,
+        h.image,
+        h.created_at,
+
+        COALESCE(
+            ROUND(AVG(hr.rating), 1),
+            0
+        ) AS rating
+
+    FROM hotels h
+
+    LEFT JOIN hotel_reviews hr
+        ON hr.hotel_id = h.id
 ";
 
 $params = [];
@@ -43,8 +53,8 @@ if ($destination !== '') {
 
     $sql .= "
         WHERE
-            name LIKE ?
-            OR location LIKE ?
+            h.name LIKE ?
+            OR h.location LIKE ?
     ";
 
     $search = '%' . $destination . '%';
@@ -55,12 +65,32 @@ if ($destination !== '') {
 
 
 // =========================================
+// GROUP BY
+// =========================================
+
+$sql .= "
+    GROUP BY
+        h.id,
+        h.name,
+        h.location,
+        h.description,
+        h.address,
+        h.phone,
+        h.image,
+        h.created_at
+";
+
+
+// =========================================
 // SORTING
 // =========================================
 
 if ($sort === 'rating') {
 
-    $sql .= " ORDER BY rating DESC";
+    // Rating tertinggi
+    $sql .= "
+        ORDER BY rating DESC
+    ";
 
 } elseif ($sort === 'price') {
 
@@ -71,7 +101,9 @@ if ($sort === 'rating') {
      * Untuk sementara kita gunakan urutan nama hotel.
      */
 
-    $sql .= " ORDER BY name ASC";
+    $sql .= "
+        ORDER BY h.name ASC
+    ";
 
 } else {
 
@@ -80,7 +112,9 @@ if ($sort === 'rating') {
      * hotel terbaru ditampilkan terlebih dahulu.
      */
 
-    $sql .= " ORDER BY created_at DESC";
+    $sql .= "
+        ORDER BY h.created_at DESC
+    ";
 }
 
 
@@ -89,6 +123,7 @@ if ($sort === 'rating') {
 // =========================================
 
 $stmt = $pdo->prepare($sql);
+
 $stmt->execute($params);
 
 $hotels = $stmt->fetchAll();
@@ -123,7 +158,9 @@ function rupiah($number)
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Stayora — Reservasi Hotel</title>
+    <title>
+        Stayora — Reservasi Hotel
+    </title>
 
     <link
         rel="stylesheet"
@@ -145,7 +182,9 @@ function rupiah($number)
     <header class="nav">
 
         <div class="brand">
+
             stay<span>ora</span>
+
         </div>
 
 
@@ -159,7 +198,7 @@ function rupiah($number)
                 Promo
             </a>
 
-            <a href="#pesanan">
+            <a href="pesanan.php">
                 Pesanan
             </a>
 
@@ -175,7 +214,10 @@ function rupiah($number)
             <span class="profile">
 
                 Halo,
-                <?= htmlspecialchars($_SESSION['user_name']) ?>
+
+                <?= htmlspecialchars(
+                    $_SESSION['user_name']
+                ) ?>
 
             </span>
 
@@ -184,7 +226,9 @@ function rupiah($number)
                 class="profile"
                 href="auth/logout.php"
             >
+
                 Logout
+
             </a>
 
         <?php else: ?>
@@ -193,7 +237,9 @@ function rupiah($number)
                 class="profile"
                 href="auth/login.php"
             >
+
                 Masuk
+
             </a>
 
         <?php endif; ?>
@@ -211,19 +257,27 @@ function rupiah($number)
         <div class="hero-inner">
 
             <div class="eyebrow">
+
                 Reservasi hotel lebih sederhana
+
             </div>
 
 
             <h1>
-                Temukan tempat menginap yang terasa seperti rumah.
+
+                Temukan tempat menginap
+                yang terasa seperti rumah.
+
             </h1>
 
 
             <p>
+
                 Cari hotel, pilih kamar, lalu lakukan reservasi
                 dalam beberapa langkah.
+
             </p>
+
 
 
             <form
@@ -249,6 +303,7 @@ function rupiah($number)
                 </div>
 
 
+
                 <!-- CHECK IN -->
 
                 <div class="field">
@@ -267,6 +322,7 @@ function rupiah($number)
                     >
 
                 </div>
+
 
 
                 <!-- CHECK OUT -->
@@ -292,6 +348,7 @@ function rupiah($number)
                 </div>
 
 
+
                 <!-- TAMU -->
 
                 <div class="field">
@@ -303,8 +360,11 @@ function rupiah($number)
                     <select name="guests">
 
                         <option value="1">
+
                             1 tamu
+
                         </option>
+
 
                         <option
                             value="2"
@@ -312,20 +372,29 @@ function rupiah($number)
                                 ? 'selected'
                                 : '' ?>
                         >
+
                             2 tamu
+
                         </option>
+
 
                         <option value="3">
+
                             3 tamu
+
                         </option>
 
+
                         <option value="4">
+
                             4 tamu
+
                         </option>
 
                     </select>
 
                 </div>
+
 
 
                 <input
@@ -335,11 +404,14 @@ function rupiah($number)
                 >
 
 
+
                 <button
                     class="searchbtn"
                     type="submit"
                 >
+
                     Cari
+
                 </button>
 
             </form>
@@ -362,7 +434,9 @@ function rupiah($number)
             <div>
 
                 <h2>
+
                     Hotel pilihan
+
                 </h2>
 
 
@@ -371,6 +445,7 @@ function rupiah($number)
                     <?php if ($destination !== ''): ?>
 
                         Menampilkan hotel di
+
                         <?= htmlspecialchars($destination) ?>
 
                     <?php else: ?>
@@ -382,6 +457,7 @@ function rupiah($number)
                 </p>
 
             </div>
+
 
 
             <!-- SORT -->
@@ -407,7 +483,9 @@ function rupiah($number)
                             ? 'selected'
                             : '' ?>
                     >
+
                         Terbaru
+
                     </option>
 
 
@@ -417,7 +495,9 @@ function rupiah($number)
                             ? 'selected'
                             : '' ?>
                     >
+
                         Rating tertinggi
+
                     </option>
 
 
@@ -427,7 +507,9 @@ function rupiah($number)
                             ? 'selected'
                             : '' ?>
                     >
+
                         Harga terendah
+
                     </option>
 
                 </select>
@@ -450,11 +532,16 @@ function rupiah($number)
                 <div class="empty">
 
                     <h3>
+
                         Hotel tidak ditemukan
+
                     </h3>
 
                     <p>
-                        Belum ada hotel yang sesuai dengan pencarian Anda.
+
+                        Belum ada hotel yang sesuai
+                        dengan pencarian Anda.
+
                     </p>
 
                 </div>
@@ -483,14 +570,22 @@ function rupiah($number)
                                     background-position: center;
                                 "
                             >
+
                                 <?php if (!empty($hotel['image'])): ?>
 
                                     <img
-                                        src="uploads/hotels/<?= htmlspecialchars($hotel['image']) ?>"
-                                        alt="<?= htmlspecialchars($hotel['name']) ?>"
+                                        src="uploads/hotels/<?= htmlspecialchars(
+                                            $hotel['image']
+                                        ) ?>"
+                                        alt="<?= htmlspecialchars(
+                                            $hotel['name']
+                                        ) ?>"
                                     >
 
                                 <?php endif; ?>
+
+
+                                <!-- RATING DI FOTO -->
 
                                 <span class="badge">
 
@@ -530,6 +625,8 @@ function rupiah($number)
                         <div class="body">
 
 
+                            <!-- RATING -->
+
                             <div class="rating">
 
                                 Sangat baik ·
@@ -538,8 +635,13 @@ function rupiah($number)
                                     $hotel['rating']
                                 ) ?>
 
+                                ★
+
                             </div>
 
+
+
+                            <!-- NAMA HOTEL -->
 
                             <h3>
 
@@ -549,6 +651,9 @@ function rupiah($number)
 
                             </h3>
 
+
+
+                            <!-- LOKASI -->
 
                             <div class="location">
 
@@ -560,6 +665,9 @@ function rupiah($number)
 
                             </div>
 
+
+
+                            <!-- DESKRIPSI -->
 
                             <?php if (!empty($hotel['description'])): ?>
 
@@ -574,16 +682,23 @@ function rupiah($number)
                             <?php endif; ?>
 
 
+
+                            <!-- HARGA / PESAN -->
+
                             <div class="price">
 
                                 <div>
 
                                     <strong>
+
                                         Lihat kamar
+
                                     </strong>
 
                                     <small>
+
                                         tersedia
+
                                     </small>
 
                                 </div>
@@ -591,9 +706,23 @@ function rupiah($number)
 
                                 <a
                                     class="book"
-                                    href="booking.php?hotel_id=<?= $hotel['id'] ?>"
+                                    href="hotel.php?hotel_id=<?= $hotel['id'] ?>&checkin=<?= urlencode(
+                                        $_GET['checkin']
+                                        ?? date('Y-m-d')
+                                    ) ?>&checkout=<?= urlencode(
+                                        $_GET['checkout']
+                                        ?? date(
+                                            'Y-m-d',
+                                            strtotime('+1 day')
+                                        )
+                                    ) ?>&guests=<?= urlencode(
+                                        $_GET['guests']
+                                        ?? '2'
+                                    ) ?>"
                                 >
+
                                     Pesan
+
                                 </a>
 
                             </div>
@@ -606,7 +735,6 @@ function rupiah($number)
 
 
             <?php endif; ?>
-
 
         </div>
 

@@ -2,7 +2,7 @@
 
 Stayora adalah aplikasi reservasi hotel berbasis **PHP Native** dan **MySQL**.
 
-Aplikasi ini memungkinkan pengguna untuk melihat hotel, memilih tipe kamar, menentukan tanggal menginap, jumlah tamu, memilih metode pembayaran, dan melakukan reservasi.
+Aplikasi ini memungkinkan pengguna untuk melihat hotel, memilih kamar, menentukan tanggal menginap, jumlah tamu, memilih metode pembayaran, dan melakukan reservasi.
 
 Project ini dibuat sebagai project pembelajaran/tugas menggunakan PHP Native tanpa framework.
 
@@ -15,9 +15,9 @@ Project ini dibuat sebagai project pembelajaran/tugas menggunakan PHP Native tan
 - Registrasi akun
 - Login dan logout
 - Melihat daftar hotel
-- Mencari hotel
+- Mencari hotel berdasarkan nama atau lokasi
 - Melihat informasi hotel
-- Memilih tipe kamar
+- Melihat tipe kamar
 - Melihat kapasitas kamar
 - Memilih jumlah tamu sesuai kapasitas kamar
 - Menentukan tanggal check-in dan check-out
@@ -30,11 +30,38 @@ Project ini dibuat sebagai project pembelajaran/tugas menggunakan PHP Native tan
 ### Admin
 
 - Login sebagai admin
+- Dashboard admin
 - Mengelola data hotel
 - Mengelola tipe kamar
 - Mengelola kamar
 - Mengelola reservasi
 - Mengelola pembayaran
+- Mengelola pengguna
+
+---
+
+## Status Reservasi
+
+Reservasi memiliki beberapa status:
+
+- `pending`
+- `confirmed`
+- `cancelled`
+- `completed`
+
+Admin dapat mengubah status reservasi melalui halaman manajemen reservasi.
+
+---
+
+## Status Pembayaran
+
+Pembayaran memiliki beberapa status:
+
+- `pending`
+- `paid`
+- `failed`
+
+Admin dapat mengelola status pembayaran melalui halaman manajemen pembayaran.
 
 ---
 
@@ -58,6 +85,31 @@ Project ini menggunakan:
 ```text
 hotel_reservation_php/
 │
+├── admin/
+│   ├── dashboard.php
+│   │
+│   ├── hotels/
+│   │   ├── index.php
+│   │   ├── create.php
+│   │   ├── edit.php
+│   │   └── delete.php
+│   │
+│   ├── room-types/
+│   │   ├── index.php
+│   │   ├── create.php
+│   │   ├── edit.php
+│   │   └── delete.php
+│   │
+│   ├── rooms/
+│   │   ├── index.php
+│   │   ├── create.php
+│   │   ├── edit.php
+│   │   └── delete.php
+│   │
+│   └── reservations/
+│       └── index.php
+│   
+│
 ├── auth/
 │   ├── login.php
 │   ├── register.php
@@ -73,11 +125,14 @@ hotel_reservation_php/
 │
 ├── public/
 │   └── css/
-│       └── style.css
+│       ├── style.css
+│       └── admin.css
 │
 ├── index.php
+├── hotel.php
 ├── booking.php
 ├── payment.php
+├── pesanan.php
 │
 ├── composer.json
 ├── composer.lock
@@ -89,8 +144,11 @@ hotel_reservation_php/
 ## Menjalankan
 
 Jika menggunakan XAMPP:
+
 1. Copy folder `hotel_reservation_php` ke `htdocs`.
+
 2. jalankan 
+
 ```bash
 composer install
 ```
