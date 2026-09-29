@@ -92,6 +92,12 @@ Jika menggunakan XAMPP:
 1. Copy folder `hotel_reservation_php` ke `htdocs`.
 2. jalankan 
 ```bash
+composer install
+```
+
+atau bisa
+
+```bash
 composer require vlucas/phpdotenv
 ``` 
 pada `terminal` 
