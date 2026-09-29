@@ -1,7 +1,5 @@
 # Stayora — PHP Hotel Reservation
 
-# Stayora — PHP Hotel Reservation
-
 Stayora adalah aplikasi reservasi hotel berbasis **PHP Native** dan **MySQL**.
 
 Aplikasi ini memungkinkan pengguna untuk melihat hotel, memilih tipe kamar, menentukan tanggal menginap, jumlah tamu, memilih metode pembayaran, dan melakukan reservasi.
@@ -86,6 +84,7 @@ hotel_reservation_php/
 ├── .env
 ├── .gitignore
 └── README.md
+```
 
 ## Menjalankan
 
