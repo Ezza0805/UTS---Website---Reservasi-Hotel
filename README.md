@@ -100,9 +100,9 @@ atau bisa
 ```bash
 composer require vlucas/phpdotenv
 ``` 
-pada `terminal` 
-2. Jalankan Apache dari XAMPP.
-3. Buka:
+pada `terminal`
+3. Jalankan Apache dari XAMPP.
+4. Buka:
    `http://localhost/hotel_reservation_php/`
 
 Jika menggunakan PHP built-in server:
