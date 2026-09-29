@@ -2,165 +2,618 @@
 
 session_start();
 
+require_once __DIR__ . '/config/database.php';
+
 $isLoggedIn = isset($_SESSION['user_id']);
 
-$hotels = [
-    [
-        "id" => 1,
-        "name" => "Grand Ternate Hotel",
-        "location" => "Ternate Tengah",
-        "rating" => 4.8,
-        "price" => 650000,
-        "image_class" => ""
-    ],
-    [
-        "id" => 2,
-        "name" => "Emerald Bay Resort",
-        "location" => "Ternate Selatan",
-        "rating" => 4.7,
-        "price" => 820000,
-        "image_class" => "two"
-    ],
-    [
-        "id" => 3,
-        "name" => "Kaisar Boutique Hotel",
-        "location" => "Ternate Utara",
-        "rating" => 4.6,
-        "price" => 540000,
-        "image_class" => "three"
-    ]
-];
 
-$destination = $_GET["destination"] ?? "Ternate";
-$sort = $_GET["sort"] ?? "recommended";
+// =========================================
+// PENGATURAN PENCARIAN
+// =========================================
 
-if ($sort === "price") {
-    usort($hotels, fn($a, $b) => $a["price"] <=> $b["price"]);
-} elseif ($sort === "rating") {
-    usort($hotels, fn($a, $b) => $b["rating"] <=> $a["rating"]);
+$destination = trim($_GET['destination'] ?? '');
+$sort = $_GET['sort'] ?? 'recommended';
+
+
+// =========================================
+// QUERY HOTEL
+// =========================================
+
+$sql = "
+    SELECT
+        id,
+        name,
+        location,
+        description,
+        address,
+        phone,
+        rating,
+        image
+    FROM hotels
+";
+
+$params = [];
+
+
+// =========================================
+// FILTER DESTINASI
+// =========================================
+
+if ($destination !== '') {
+
+    $sql .= "
+        WHERE
+            name LIKE ?
+            OR location LIKE ?
+    ";
+
+    $search = '%' . $destination . '%';
+
+    $params[] = $search;
+    $params[] = $search;
 }
 
-function rupiah($number) {
-    return number_format($number, 0, ",", ".");
+
+// =========================================
+// SORTING
+// =========================================
+
+if ($sort === 'rating') {
+
+    $sql .= " ORDER BY rating DESC";
+
+} elseif ($sort === 'price') {
+
+    /*
+     * Saat ini tabel hotels belum memiliki harga.
+     *
+     * Harga kamar nantinya berasal dari room_types.
+     * Untuk sementara kita gunakan urutan nama hotel.
+     */
+
+    $sql .= " ORDER BY name ASC";
+
+} else {
+
+    /*
+     * Rekomendasi:
+     * hotel terbaru ditampilkan terlebih dahulu.
+     */
+
+    $sql .= " ORDER BY created_at DESC";
 }
+
+
+// =========================================
+// EKSEKUSI QUERY
+// =========================================
+
+$stmt = $pdo->prepare($sql);
+$stmt->execute($params);
+
+$hotels = $stmt->fetchAll();
+
+
+// =========================================
+// FORMAT RUPIAH
+// =========================================
+
+function rupiah($number)
+{
+    return number_format(
+        $number,
+        0,
+        ",",
+        "."
+    );
+}
+
 ?>
+
 <!DOCTYPE html>
+
 <html lang="id">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
     <title>Stayora — Reservasi Hotel</title>
-    <link rel="stylesheet" href="style.css">
+
+    <link
+        rel="stylesheet"
+        href="public/css/style.css"
+    >
+
 </head>
+
+
 <body>
+
 <div class="app">
+
+
+    <!-- =====================================
+         NAVBAR
+    ====================================== -->
+
     <header class="nav">
-        <div class="brand">stay<span>ora</span></div>
+
+        <div class="brand">
+            stay<span>ora</span>
+        </div>
+
+
         <nav class="navlinks">
-            <a href="index.php">Hotel</a>
-            <a href="#promo">Promo</a>
-            <a href="#pesanan">Pesanan</a>
-            <a href="#bantuan">Bantuan</a>
+
+            <a href="index.php">
+                Hotel
+            </a>
+
+            <a href="#promo">
+                Promo
+            </a>
+
+            <a href="#pesanan">
+                Pesanan
+            </a>
+
+            <a href="#bantuan">
+                Bantuan
+            </a>
+
         </nav>
+
+
         <?php if ($isLoggedIn): ?>
 
             <span class="profile">
-                Halo, <?= htmlspecialchars($_SESSION['user_name']) ?>
+
+                Halo,
+                <?= htmlspecialchars($_SESSION['user_name']) ?>
+
             </span>
 
-            <a class="profile" href="auth/logout.php">
+
+            <a
+                class="profile"
+                href="auth/logout.php"
+            >
                 Logout
             </a>
 
         <?php else: ?>
 
-            <a class="profile" href="auth/login.php">
+            <a
+                class="profile"
+                href="auth/login.php"
+            >
                 Masuk
             </a>
 
         <?php endif; ?>
+
     </header>
 
+
+
+    <!-- =====================================
+         HERO
+    ====================================== -->
+
     <section class="hero">
+
         <div class="hero-inner">
-            <div class="eyebrow">Reservasi hotel lebih sederhana</div>
-            <h1>Temukan tempat menginap yang terasa seperti rumah.</h1>
-            <p>Cari hotel, pilih kamar, lalu lakukan reservasi dalam beberapa langkah.</p>
 
-            <form class="searchbox" method="GET" action="index.php">
-                <div class="field">
-                    <label>DESTINASI</label>
-                    <input name="destination" value="<?= htmlspecialchars($destination) ?>" placeholder="Kota atau hotel">
-                </div>
-
-                <div class="field">
-                    <label>CHECK-IN</label>
-                    <input name="checkin" type="date" value="<?= date('Y-m-d') ?>">
-                </div>
-
-                <div class="field">
-                    <label>CHECK-OUT</label>
-                    <input name="checkout" type="date" value="<?= date('Y-m-d', strtotime('+1 day')) ?>">
-                </div>
-
-                <div class="field">
-                    <label>TAMU</label>
-                    <select name="guests">
-                        <option>2 tamu</option>
-                        <option>1 tamu</option>
-                        <option>3 tamu</option>
-                        <option>4 tamu</option>
-                    </select>
-                </div>
-
-                <input type="hidden" name="sort" value="<?= htmlspecialchars($sort) ?>">
-                <button class="searchbtn" type="submit">Cari</button>
-            </form>
-        </div>
-    </section>
-
-    <main class="main">
-        <div class="sectionhead">
-            <div>
-                <h2>Hotel pilihan</h2>
-                <p>Menampilkan hotel populer di <?= htmlspecialchars($destination) ?></p>
+            <div class="eyebrow">
+                Reservasi hotel lebih sederhana
             </div>
 
-            <form method="GET">
-                <input type="hidden" name="destination" value="<?= htmlspecialchars($destination) ?>">
-                <select class="sort" name="sort" onchange="this.form.submit()">
-                    <option value="recommended" <?= $sort === "recommended" ? "selected" : "" ?>>Rekomendasi</option>
-                    <option value="price" <?= $sort === "price" ? "selected" : "" ?>>Harga terendah</option>
-                    <option value="rating" <?= $sort === "rating" ? "selected" : "" ?>>Rating tertinggi</option>
-                </select>
+
+            <h1>
+                Temukan tempat menginap yang terasa seperti rumah.
+            </h1>
+
+
+            <p>
+                Cari hotel, pilih kamar, lalu lakukan reservasi
+                dalam beberapa langkah.
+            </p>
+
+
+            <form
+                class="searchbox"
+                method="GET"
+                action="index.php"
+            >
+
+                <!-- DESTINASI -->
+
+                <div class="field">
+
+                    <label>
+                        DESTINASI
+                    </label>
+
+                    <input
+                        name="destination"
+                        value="<?= htmlspecialchars($destination) ?>"
+                        placeholder="Kota atau hotel"
+                    >
+
+                </div>
+
+
+                <!-- CHECK IN -->
+
+                <div class="field">
+
+                    <label>
+                        CHECK-IN
+                    </label>
+
+                    <input
+                        name="checkin"
+                        type="date"
+                        value="<?= htmlspecialchars(
+                            $_GET['checkin']
+                            ?? date('Y-m-d')
+                        ) ?>"
+                    >
+
+                </div>
+
+
+                <!-- CHECK OUT -->
+
+                <div class="field">
+
+                    <label>
+                        CHECK-OUT
+                    </label>
+
+                    <input
+                        name="checkout"
+                        type="date"
+                        value="<?= htmlspecialchars(
+                            $_GET['checkout']
+                            ?? date(
+                                'Y-m-d',
+                                strtotime('+1 day')
+                            )
+                        ) ?>"
+                    >
+
+                </div>
+
+
+                <!-- TAMU -->
+
+                <div class="field">
+
+                    <label>
+                        TAMU
+                    </label>
+
+                    <select name="guests">
+
+                        <option value="1">
+                            1 tamu
+                        </option>
+
+                        <option
+                            value="2"
+                            <?= ($_GET['guests'] ?? '2') === '2'
+                                ? 'selected'
+                                : '' ?>
+                        >
+                            2 tamu
+                        </option>
+
+                        <option value="3">
+                            3 tamu
+                        </option>
+
+                        <option value="4">
+                            4 tamu
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <input
+                    type="hidden"
+                    name="sort"
+                    value="<?= htmlspecialchars($sort) ?>"
+                >
+
+
+                <button
+                    class="searchbtn"
+                    type="submit"
+                >
+                    Cari
+                </button>
+
             </form>
+
         </div>
+
+    </section>
+
+
+
+    <!-- =====================================
+         DAFTAR HOTEL
+    ====================================== -->
+
+    <main class="main">
+
+
+        <div class="sectionhead">
+
+            <div>
+
+                <h2>
+                    Hotel pilihan
+                </h2>
+
+
+                <p>
+
+                    <?php if ($destination !== ''): ?>
+
+                        Menampilkan hotel di
+                        <?= htmlspecialchars($destination) ?>
+
+                    <?php else: ?>
+
+                        Menampilkan hotel yang tersedia
+
+                    <?php endif; ?>
+
+                </p>
+
+            </div>
+
+
+            <!-- SORT -->
+
+            <form method="GET">
+
+                <input
+                    type="hidden"
+                    name="destination"
+                    value="<?= htmlspecialchars($destination) ?>"
+                >
+
+
+                <select
+                    class="sort"
+                    name="sort"
+                    onchange="this.form.submit()"
+                >
+
+                    <option
+                        value="recommended"
+                        <?= $sort === 'recommended'
+                            ? 'selected'
+                            : '' ?>
+                    >
+                        Terbaru
+                    </option>
+
+
+                    <option
+                        value="rating"
+                        <?= $sort === 'rating'
+                            ? 'selected'
+                            : '' ?>
+                    >
+                        Rating tertinggi
+                    </option>
+
+
+                    <option
+                        value="price"
+                        <?= $sort === 'price'
+                            ? 'selected'
+                            : '' ?>
+                    >
+                        Harga terendah
+                    </option>
+
+                </select>
+
+            </form>
+
+        </div>
+
+
+
+        <!-- =====================================
+             HOTEL CARDS
+        ====================================== -->
 
         <div class="cards">
-            <?php foreach ($hotels as $hotel): ?>
-                <article class="card">
-                    <div class="photo <?= $hotel["image_class"] ?>">
-                        <span class="badge"><?= $hotel["rating"] ?> ★</span>
-                    </div>
 
-                    <div class="body">
-                        <div class="rating">Sangat baik · <?= $hotel["rating"] ?></div>
-                        <h3><?= htmlspecialchars($hotel["name"]) ?></h3>
-                        <div class="location">📍 <?= htmlspecialchars($hotel["location"]) ?></div>
 
-                        <div class="price">
-                            <div>
-                                <strong>Rp <?= rupiah($hotel["price"]) ?></strong>
-                                <small>/ malam</small>
+            <?php if (!$hotels): ?>
+
+                <div class="empty">
+
+                    <h3>
+                        Hotel tidak ditemukan
+                    </h3>
+
+                    <p>
+                        Belum ada hotel yang sesuai dengan pencarian Anda.
+                    </p>
+
+                </div>
+
+
+            <?php else: ?>
+
+
+                <?php foreach ($hotels as $hotel): ?>
+
+                    <article class="card">
+
+
+                        <!-- FOTO HOTEL -->
+
+                        <?php if (!empty($hotel['image'])): ?>
+
+                            <div
+                                class="photo"
+                                style="
+                                    background-image:
+                                    url('<?= htmlspecialchars(
+                                        $hotel['image']
+                                    ) ?>');
+                                    background-size: cover;
+                                    background-position: center;
+                                "
+                            >
+                                <?php if (!empty($hotel['image'])): ?>
+
+                                    <img
+                                        src="uploads/hotels/<?= htmlspecialchars($hotel['image']) ?>"
+                                        alt="<?= htmlspecialchars($hotel['name']) ?>"
+                                    >
+
+                                <?php endif; ?>
+
+                                <span class="badge">
+
+                                    <?= htmlspecialchars(
+                                        $hotel['rating']
+                                    ) ?>
+
+                                    ★
+
+                                </span>
+
                             </div>
 
-                            <a class="book" href="booking.php?hotel_id=<?= $hotel["id"] ?>">Pesan</a>
+
+                        <?php else: ?>
+
+                            <div class="photo">
+
+                                <span class="badge">
+
+                                    <?= htmlspecialchars(
+                                        $hotel['rating']
+                                    ) ?>
+
+                                    ★
+
+                                </span>
+
+                            </div>
+
+                        <?php endif; ?>
+
+
+
+                        <!-- INFORMASI HOTEL -->
+
+                        <div class="body">
+
+
+                            <div class="rating">
+
+                                Sangat baik ·
+
+                                <?= htmlspecialchars(
+                                    $hotel['rating']
+                                ) ?>
+
+                            </div>
+
+
+                            <h3>
+
+                                <?= htmlspecialchars(
+                                    $hotel['name']
+                                ) ?>
+
+                            </h3>
+
+
+                            <div class="location">
+
+                                📍
+
+                                <?= htmlspecialchars(
+                                    $hotel['location']
+                                ) ?>
+
+                            </div>
+
+
+                            <?php if (!empty($hotel['description'])): ?>
+
+                                <p class="hotel-description">
+
+                                    <?= htmlspecialchars(
+                                        $hotel['description']
+                                    ) ?>
+
+                                </p>
+
+                            <?php endif; ?>
+
+
+                            <div class="price">
+
+                                <div>
+
+                                    <strong>
+                                        Lihat kamar
+                                    </strong>
+
+                                    <small>
+                                        tersedia
+                                    </small>
+
+                                </div>
+
+
+                                <a
+                                    class="book"
+                                    href="booking.php?hotel_id=<?= $hotel['id'] ?>"
+                                >
+                                    Pesan
+                                </a>
+
+                            </div>
+
                         </div>
-                    </div>
-                </article>
-            <?php endforeach; ?>
+
+                    </article>
+
+                <?php endforeach; ?>
+
+
+            <?php endif; ?>
+
+
         </div>
+
     </main>
+
 </div>
+
 </body>
+
 </html>

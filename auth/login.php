@@ -12,6 +12,9 @@ if (isset($_SESSION['user_id'])) {
 
 $error = '';
 
+$success = $_SESSION['success'] ?? '';
+unset($_SESSION['success']);
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $email = trim($_POST['email'] ?? '');
@@ -84,8 +87,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 
     <main class="auth-container">
+        <a href="../index.php" class="back-home">
+            ← Kembali ke Beranda
+        </a>
 
         <h1>Login</h1>
+
+        <?php if ($success): ?>
+            <p class="success">
+                <?= htmlspecialchars($success) ?>
+            </p>
+        <?php endif; ?>
 
         <?php if ($error): ?>
 

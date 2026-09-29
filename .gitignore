@@ -1,4 +1,4 @@
-# Environment variables
+# Environment
 .env
 .env.local
 .env.*.local
@@ -6,10 +6,20 @@
 # Dependencies
 /vendor/
 
+# Ignore semua isi uploads
+/uploads/*
+
+# Tetapi tetap izinkan .htaccess
+!/uploads/.htaccess
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
 # IDE
 .vscode/
 .idea/
 
-# OS
-Thumbs.db
-.DS_Store
+# Logs
+*.log

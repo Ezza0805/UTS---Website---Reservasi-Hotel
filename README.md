@@ -1,9 +1,91 @@
 # Stayora — PHP Hotel Reservation
 
-Struktur:
-- `index.php` — halaman utama dan pencarian hotel
-- `booking.php` — halaman reservasi
-- `style.css` — seluruh styling website
+# Stayora — PHP Hotel Reservation
+
+Stayora adalah aplikasi reservasi hotel berbasis **PHP Native** dan **MySQL**.
+
+Aplikasi ini memungkinkan pengguna untuk melihat hotel, memilih tipe kamar, menentukan tanggal menginap, jumlah tamu, memilih metode pembayaran, dan melakukan reservasi.
+
+Project ini dibuat sebagai project pembelajaran/tugas menggunakan PHP Native tanpa framework.
+
+---
+
+## Fitur
+
+### User
+
+- Registrasi akun
+- Login dan logout
+- Melihat daftar hotel
+- Mencari hotel
+- Melihat informasi hotel
+- Memilih tipe kamar
+- Melihat kapasitas kamar
+- Memilih jumlah tamu sesuai kapasitas kamar
+- Menentukan tanggal check-in dan check-out
+- Melihat jumlah malam
+- Melihat total harga reservasi
+- Memilih metode pembayaran
+- Melakukan reservasi
+- Melihat informasi reservasi
+
+### Admin
+
+- Login sebagai admin
+- Mengelola data hotel
+- Mengelola tipe kamar
+- Mengelola kamar
+- Mengelola reservasi
+- Mengelola pembayaran
+
+---
+
+## Teknologi
+
+Project ini menggunakan:
+
+- PHP Native
+- MySQL
+- PDO
+- HTML5
+- CSS3
+- JavaScript
+- Composer
+- PHP dotenv (`vlucas/phpdotenv`)
+
+---
+
+## Struktur Project
+
+```text
+hotel_reservation_php/
+│
+├── auth/
+│   ├── login.php
+│   ├── register.php
+│   └── logout.php
+│
+├── config/
+│   └── database.php
+│
+├── uploads/
+│   ├── .htaccess
+│   ├── hotels/
+│   └── room_types/
+│
+├── public/
+│   └── css/
+│       └── style.css
+│
+├── index.php
+├── booking.php
+├── payment.php
+│
+├── composer.json
+├── composer.lock
+├── .env
+├── .gitignore
+└── README.md
 
 ## Menjalankan
 
