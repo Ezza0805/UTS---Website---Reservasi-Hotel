@@ -101,7 +101,9 @@ atau bisa
 composer require vlucas/phpdotenv
 ``` 
 pada `terminal`
+
 3. Jalankan Apache dari XAMPP.
+
 4. Buka:
    `http://localhost/hotel_reservation_php/`
 
